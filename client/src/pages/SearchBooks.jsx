@@ -9,8 +9,14 @@ import {
 } from 'react-bootstrap';
 
 import Auth from '../utils/auth';
-import { saveBook, searchGoogleBooks } from '../utils/API';
+import { searchGoogleBooks } from '../utils/API';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
+
+// imported useMutation hook from Apollo Client
+import { useMutation } from '@apollo/client';
+// import SAVE_BOOK mutation to be used in the handleSaveBook() function
+// instead of the API saveBook() function
+import { SAVE_BOOK } from '../utils/mutations';
 
 const SearchBooks = () => {
   // create state for holding returned google api data
@@ -26,6 +32,9 @@ const SearchBooks = () => {
   useEffect(() => {
     return () => saveBookIds(savedBookIds);
   });
+
+  // This will set up our SAVE_BOOK mutation function
+  const [saveBook, { error }] = useMutation(SAVE_BOOK);
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
@@ -71,17 +80,28 @@ const SearchBooks = () => {
       return false;
     }
 
-    try {
-      const response = await saveBook(bookToSave, token);
+    // removed try for API saveBook() function 
+    // try {
+    //   const response = await saveBook(bookToSave, token);
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
+    // use the useMutation() hook instead of the saveBook() function
+    try {
+      const res = await saveBook({
+        // this will pass the `variables` data into the mutation
+        variables: { 
+          // we are deconstructing the bookData object that we created above
+          bookData: { ...bookToSave }
+        },
+      });
+
+      // if (!response.ok) {
+      //   throw new Error('something went wrong!');
+      // }
 
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (err) {
-      console.error(err);
+      console.error(error);
     }
   };
 
