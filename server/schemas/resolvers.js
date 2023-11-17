@@ -23,7 +23,7 @@ const resolvers = {
         // finds a user but waits for an email and a password
         login: async (parent, { email, password }) => {
             const user = await User.findOne({ email });
-            
+            console.log(user)
             // otherwise error is thrown
             if(!user) {
                 throw AuthenticationError;
